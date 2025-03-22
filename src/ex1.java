@@ -5,7 +5,6 @@ public class ex1 {
 
     public static void main(String[] args) {
         Stack<Character> stack = new Stack<>();
-        Stack<Character> saveStack = new Stack<>();
 
         pushStringOntoStack(stack, str);
         System.out.println("Iterative: str = \"" + str + "\"; checkParensIter = " + checkParensIter(stack));
@@ -15,24 +14,24 @@ public class ex1 {
 
         pushStringOntoStack(stack, str);
         System.out.println("stack before = " + stack);
-        System.out.println("RecurRest: str = \"" + str + "\"; checkParensRecRestore  = " + checkParensRecRestore(stack, saveStack, 0, false));
+        System.out.println("RecurRest: str = \"" + str + "\"; checkParensRecRestore  = " + checkParensRecRestore(stack));
         System.out.println("stack after = " + stack);
     }
 
     public static boolean checkParensIter(Stack<Character> stack) {
-        int counter = 0;
+        int currCounter = 0;
 
         while (!stack.empty()) {
-            counter += switch (stack.pop()) {
+            currCounter += switch (stack.pop()) {
                 case '(' -> 1;
                 case ')' -> -1;
                 default -> 0;
             };
 
-            if (counter < 0) return false;
+            if (currCounter < 0) return false;
         }
 
-        return counter == 0;
+        return currCounter == 0;
     }
 
     public static boolean checkParensRec(Stack<Character> stack, int currCounter) {
@@ -49,25 +48,33 @@ public class ex1 {
         return currCounter == 0;
     }
 
-    public static boolean checkParensRecRestore(Stack<Character> stack, Stack<Character> saveStack, int currCounter, boolean resultKnown) {
-        if (!resultKnown) {
-            char top = stack.pop();
-            currCounter += switch (top) {
-                case '(' -> 1;
-                case ')' -> -1;
-                default -> 0;
-            };
+    public static boolean checkParensRecRestore(Stack<Character> stack) {
+        return checkParensRecRestore(stack, 0) == 0;
+    }
 
-            saveStack.push(top);
-            resultKnown = stack.empty() || currCounter < 0;
-            return checkParensRecRestore(stack, saveStack, currCounter, resultKnown);
-        } else {
-            if (!saveStack.empty()) {
-                stack.push(saveStack.pop());
-                return checkParensRecRestore(stack, saveStack, currCounter, resultKnown);
-            }
-            return currCounter == 0;
+    private static int checkParensRecRestore(Stack<Character> stack, int counter) {
+        if (stack.empty()) {
+            return counter;
         }
+
+        char top = stack.pop();
+
+        counter += switch (top) {
+            case '(' -> 1;
+            case ')' -> -1;
+            default -> 0;
+        };
+
+        if (counter < 0) {
+            stack.push(top);
+            return -1;
+        }
+
+        int result = checkParensRecRestore(stack, counter);
+
+        stack.push(top);
+
+        return result;
     }
 
     public static void pushStringOntoStack(Stack<Character> stack, String str) {
